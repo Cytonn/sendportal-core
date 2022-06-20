@@ -1,5 +1,5 @@
 {
-    "name": "Cytonn/sendportal-core",
+    "name": "cytonn/sendportal-core",
     "homepage": "https://github.com/mettle/sendportal-core",
     "description": "Cytonn send core functionality with perfomance tweaks.",
     "type": "library",
