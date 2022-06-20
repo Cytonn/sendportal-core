@@ -73,13 +73,7 @@ class SubscribersImportController extends Controller
                 $data = Arr::only($line, ['id', 'email', 'first_name', 'last_name']);
 
                 $data['tags'] = $request->get('tags') ?? [];
-                $subscriber = $this->subscriberService->import(Sendportal::currentWorkspaceId(), $data);
-
-                if ($subscriber->wasRecentlyCreated) {
-                    $counter['created']++;
-                } else {
-                    $counter['updated']++;
-                }
+                $this->subscriberService->import(Sendportal::currentWorkspaceId(), $data);
             });
 
             Storage::disk('local')->delete($path);

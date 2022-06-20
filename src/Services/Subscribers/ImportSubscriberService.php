@@ -20,26 +20,31 @@ class ImportSubscriberService
     /**
      * @throws Exception
      */
-    public function import(int $workspaceId, array $data): Subscriber
+    public function import(int $workspaceId, array $data)
     {
-        $subscriber = null;
 
-        if (! empty(Arr::get($data, 'id'))) {
-            $subscriber = $this->subscribers->findBy($workspaceId, 'id', $data['id'], ['tags']);
-        }
+        dispatch(function () use ($data, $workspaceId) {
 
-        if (! $subscriber) {
-            $subscriber = $this->subscribers->findBy($workspaceId, 'email', Arr::get($data, 'email'), ['tags']);
-        }
+            $subscriber = null;
 
-        if (! $subscriber) {
-            $subscriber = $this->subscribers->store($workspaceId, Arr::except($data, ['id', 'tags']));
-        }
+            if (!empty(Arr::get($data, 'id'))) {
+                $subscriber = $this->subscribers->findBy($workspaceId, 'id', $data['id'], ['tags']);
+            }
 
-        $data['tags'] = array_merge($subscriber->tags->pluck('id')->toArray(), Arr::get($data, 'tags'));
+            if (!$subscriber) {
+                $subscriber = $this->subscribers->findBy($workspaceId, 'email', Arr::get($data, 'email'), ['tags']);
+            }
 
-        $this->subscribers->update($workspaceId, $subscriber->id, $data);
+            if (!$subscriber) {
+                $subscriber = $this->subscribers->store($workspaceId, Arr::except($data, ['id', 'tags']));
+            }
 
-        return $subscriber;
+            $data['tags'] = array_merge($subscriber->tags->pluck('id')->toArray(), Arr::get($data, 'tags'));
+
+            $this->subscribers->update($workspaceId, $subscriber->id, $data);
+
+            return $subscriber;
+        });
+
     }
 }
