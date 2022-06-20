@@ -88,7 +88,7 @@ abstract class BaseSubscriberTenantRepository extends BaseTenantRepository imple
     {
         return $this->getQueryBuilder($workspaceId)
             ->orderBy('created_at', 'DESC')
-            ->take(10)
+            ->take(5)
             ->get();
     }
 
