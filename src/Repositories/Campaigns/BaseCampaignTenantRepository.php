@@ -29,6 +29,8 @@ abstract class BaseCampaignTenantRepository extends BaseTenantRepository impleme
         return $this->getQueryBuilder($workspaceId)
             ->where('status_id', CampaignStatus::STATUS_SENT)
             ->with($relations)
+            ->latest()
+            ->take(5)
             ->get();
     }
 

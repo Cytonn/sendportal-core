@@ -46,7 +46,7 @@ class CreateMessages
     {
         Subscriber::where('workspace_id', $campaign->workspace_id)
             ->whereNull('unsubscribed_at')
-            ->chunkById(1000, function ($subscribers) use ($campaign) {
+            ->chunkById(10000, function ($subscribers) use ($campaign) {
                 $this->dispatchToSubscriber($campaign, $subscribers);
             }, 'id');
     }
@@ -75,7 +75,7 @@ class CreateMessages
     {
         \Log::info('- Handling Campaign Tag id='.$tag->id);
 
-        $tag->subscribers()->whereNull('unsubscribed_at')->chunkById(1000, function ($subscribers) use ($campaign) {
+        $tag->subscribers()->whereNull('unsubscribed_at')->chunkById(10000, function ($subscribers) use ($campaign) {
             $this->dispatchToSubscriber($campaign, $subscribers);
         }, 'sendportal_subscribers.id');
     }
