@@ -20,7 +20,7 @@ class ImportSubscriberService
     /**
      * @throws Exception
      */
-    public function import(int $workspaceId, array $data): Subscriber
+    public function import(int $workspaceId, array $data)
     {
 
         dispatch(function () use ($data, $workspaceId) {
