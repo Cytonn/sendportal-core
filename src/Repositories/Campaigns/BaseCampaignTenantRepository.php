@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sendportal\Base\Repositories\Campaigns;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Arr;
@@ -39,6 +40,12 @@ abstract class BaseCampaignTenantRepository extends BaseTenantRepository impleme
      */
     public function getCounts(Collection $campaignIds, int $workspaceId): array
     {
+        $key = "count_summary_" . $workspaceId;
+
+        if (\Cache::has($key)) {
+            return \Cache::get($key);
+        }
+
         $counts = DB::table('sendportal_campaigns')
             ->leftJoin('sendportal_messages', function ($join) use ($campaignIds, $workspaceId) {
                 $join->on('sendportal_messages.source_id', '=', 'sendportal_campaigns.id')
@@ -57,7 +64,11 @@ abstract class BaseCampaignTenantRepository extends BaseTenantRepository impleme
             ->orderBy('sendportal_campaigns.id')
             ->get();
 
-        return $counts->flatten()->keyBy('campaign_id')->toArray();
+        $counts = $counts->flatten()->keyBy('campaign_id')->toArray();
+
+        \Cache::put($key, $counts, Carbon::now()->addDays(2));
+
+        return $counts;
     }
 
     /**
