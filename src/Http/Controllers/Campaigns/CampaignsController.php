@@ -63,7 +63,7 @@ class CampaignsController extends Controller
     {
         $workspaceId = Sendportal::currentWorkspaceId();
         $params = ['draft' => true];
-        $campaigns = $this->campaigns->paginate($workspaceId, 'created_atDesc', ['status'], 25, $params);
+        $campaigns = $this->campaigns->paginate($workspaceId, 'created_atDesc', ['status'], 6, $params);
 
         return view('sendportal::campaigns.index', [
             'campaigns' => $campaigns,
