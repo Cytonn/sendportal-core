@@ -40,11 +40,11 @@ abstract class BaseCampaignTenantRepository extends BaseTenantRepository impleme
      */
     public function getCounts(Collection $campaignIds, int $workspaceId): array
     {
-        $key = "count_summary_" . $workspaceId;
+//        $key = "count_summary_" . $workspaceId;
 
-        if (\Cache::has($key)) {
-            return \Cache::get($key);
-        }
+//        if (\Cache::has($key)) {
+//            return \Cache::get($key);
+//        }
 
         $counts = DB::table('sendportal_campaigns')
             ->leftJoin('sendportal_messages', function ($join) use ($campaignIds, $workspaceId) {
@@ -66,7 +66,7 @@ abstract class BaseCampaignTenantRepository extends BaseTenantRepository impleme
 
         $counts = $counts->flatten()->keyBy('campaign_id')->toArray();
 
-        \Cache::put($key, $counts, Carbon::now()->addDays(2));
+//        \Cache::put($key, $counts, Carbon::now()->addDays(2));
 
         return $counts;
     }
