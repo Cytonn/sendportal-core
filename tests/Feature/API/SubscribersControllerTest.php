@@ -39,6 +39,122 @@ class SubscribersControllerTest extends TestCase
     }
 
     /** @test */
+    public function the_subscribers_index_can_be_filtered_by_unsubscribed_status()
+    {
+        // given
+        $subscribed = $this->createSubscriber();
+        $unsubscribed = Subscriber::factory()->create([
+            'workspace_id' => Sendportal::currentWorkspaceId(),
+            'unsubscribed_at' => now(),
+        ]);
+
+        // when
+        $route = route('sendportal.api.subscribers.index', ['status' => 'unsubscribed']);
+
+        $response = $this->get($route);
+
+        // then
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJson([
+            'data' => [
+                Arr::only($unsubscribed->toArray(), ['first_name', 'last_name', 'email']),
+            ],
+        ]);
+    }
+
+    /** @test */
+    public function the_unsubscribed_subscribers_endpoint_only_returns_unsubscribed_subscribers()
+    {
+        // given
+        $this->createSubscriber();
+        $unsubscribed = Subscriber::factory()->create([
+            'workspace_id' => Sendportal::currentWorkspaceId(),
+            'unsubscribed_at' => now(),
+        ]);
+
+        // when
+        $route = route('sendportal.api.subscribers.unsubscribed');
+
+        $response = $this->get($route);
+
+        // then
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJson([
+            'data' => [
+                Arr::only($unsubscribed->toArray(), ['first_name', 'last_name', 'email']),
+            ],
+        ]);
+    }
+
+    /** @test */
+    public function check_unsubscribed_returns_true_for_an_unsubscribed_email()
+    {
+        // given
+        $subscriber = Subscriber::factory()->create([
+            'workspace_id' => Sendportal::currentWorkspaceId(),
+            'unsubscribed_at' => now(),
+        ]);
+
+        // when
+        $route = route('sendportal.api.subscribers.check-unsubscribed', ['email' => $subscriber->email]);
+
+        $response = $this->get($route);
+
+        // then
+        $response->assertStatus(200);
+        $response->assertJson([
+            'email' => $subscriber->email,
+            'unsubscribed' => true,
+        ]);
+    }
+
+    /** @test */
+    public function check_unsubscribed_returns_false_for_a_subscribed_email()
+    {
+        // given
+        $subscriber = $this->createSubscriber();
+
+        // when
+        $route = route('sendportal.api.subscribers.check-unsubscribed', ['email' => $subscriber->email]);
+
+        $response = $this->get($route);
+
+        // then
+        $response->assertStatus(200);
+        $response->assertJson([
+            'email' => $subscriber->email,
+            'unsubscribed' => false,
+        ]);
+    }
+
+    /** @test */
+    public function check_unsubscribed_returns_false_for_an_email_with_no_subscriber_record()
+    {
+        // when
+        $route = route('sendportal.api.subscribers.check-unsubscribed', ['email' => $this->faker->email]);
+
+        $response = $this->get($route);
+
+        // then
+        $response->assertStatus(200);
+        $response->assertJson(['unsubscribed' => false]);
+    }
+
+    /** @test */
+    public function check_unsubscribed_requires_a_valid_email()
+    {
+        // when
+        $route = route('sendportal.api.subscribers.check-unsubscribed', ['email' => 'not-an-email']);
+
+        $response = $this->getJson($route);
+
+        // then
+        $response->assertStatus(422);
+    }
+
+    /** @test */
     public function a_single_subscriber_is_accessible_to_authorised_users()
     {
         // given
