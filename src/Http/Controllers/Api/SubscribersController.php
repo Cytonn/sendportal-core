@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Sendportal\Base\Http\Controllers\Api;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Sendportal\Base\Facades\Sendportal;
@@ -34,12 +36,55 @@ class SubscribersController extends Controller
     /**
      * @throws Exception
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
         $workspaceId = Sendportal::currentWorkspaceId();
-        $subscribers = $this->subscribers->paginate($workspaceId, 'last_name');
+        $subscribers = $this->subscribers->paginate(
+            $workspaceId,
+            'last_name',
+            [],
+            25,
+            $request->only(['name', 'status', 'tags'])
+        );
 
         return SubscriberResource::collection($subscribers);
+    }
+
+    /**
+     * List subscribers who have unsubscribed.
+     *
+     * @throws Exception
+     */
+    public function unsubscribed(Request $request): AnonymousResourceCollection
+    {
+        $workspaceId = Sendportal::currentWorkspaceId();
+        $subscribers = $this->subscribers->paginate(
+            $workspaceId,
+            'last_name',
+            [],
+            25,
+            array_merge($request->only(['name', 'tags']), ['status' => 'unsubscribed'])
+        );
+
+        return SubscriberResource::collection($subscribers);
+    }
+
+    /**
+     * Check whether a given email address has unsubscribed.
+     *
+     * @throws Exception
+     */
+    public function checkUnsubscribed(Request $request): JsonResponse
+    {
+        $request->validate(['email' => ['required', 'email']]);
+
+        $workspaceId = Sendportal::currentWorkspaceId();
+        $subscriber = $this->subscribers->findBy($workspaceId, 'email', $request->input('email'));
+
+        return response()->json([
+            'email' => $request->input('email'),
+            'unsubscribed' => (bool) ($subscriber->unsubscribed_at ?? false),
+        ]);
     }
 
     /**
