@@ -213,7 +213,7 @@ class SubscribersImportControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_should_notify_the_user_of_how_many_subscribers_have_been_imported_and_how_many_have_been_updated()
+    public function it_should_tell_the_user_how_many_subscribers_have_been_queued_for_import()
     {
         // given
         $subscriber = Subscriber::factory()->create([
@@ -234,7 +234,11 @@ class SubscribersImportControllerTest extends TestCase
 
         // then
         $response->assertRedirect(route('sendportal.subscribers.index'));
-        $response->assertSessionHas('success', 'Imported 2 subscriber(s) and updated 1 subscriber(s) out of 3');
+        $response->assertSessionHas('success', 'Import queued: 3 subscriber(s) will be imported in the background');
+
+        // The queue runs synchronously in tests, so the rows have been processed.
+        self::assertEquals(3, Subscriber::where('workspace_id', Sendportal::currentWorkspaceId())->count());
+        self::assertEquals('Update Surname', $subscriber->fresh()->last_name);
     }
 
     #[Test]

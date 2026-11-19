@@ -64,25 +64,22 @@ class SubscribersImportController extends Controller
                     ->with('errors', $errors);
             }
 
-            $counter = [
-                'created' => 0,
-                'updated' => 0
-            ];
+            $queued = 0;
 
-            (new FastExcel())->import(Storage::disk('local')->path($path), function (array $line) use ($request, &$counter) {
+            (new FastExcel())->import(Storage::disk('local')->path($path), function (array $line) use ($request, &$queued) {
                 $data = Arr::only($line, ['id', 'email', 'first_name', 'last_name']);
 
                 $data['tags'] = $request->get('tags') ?? [];
                 $this->subscriberService->import(Sendportal::currentWorkspaceId(), $data);
+
+                $queued++;
             });
 
             Storage::disk('local')->delete($path);
 
             return redirect()->route('sendportal.subscribers.index')
-                ->with('success', __('Imported :created subscriber(s) and updated :updated subscriber(s) out of :total', [
-                    'created' => $counter['created'],
-                    'updated' => $counter['updated'],
-                    'total' => $counter['created'] + $counter['updated']
+                ->with('success', __('Import queued: :total subscriber(s) will be imported in the background', [
+                    'total' => $queued,
                 ]));
         }
 
