@@ -44,6 +44,21 @@ class TemplatesControllerTest extends TestCase
     }
 
     #[Test]
+    public function templates_do_not_have_a_show_page()
+    {
+        // given
+        $template = Template::factory()->create([
+            'workspace_id' => Sendportal::currentWorkspaceId()
+        ]);
+
+        // when
+        $response = $this->get('/templates/'.$template->id);
+
+        // then
+        $response->assertNotFound();
+    }
+
+    #[Test]
     public function a_logged_in_user_can_see_the_create_form()
     {
         // when

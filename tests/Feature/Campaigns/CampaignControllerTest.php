@@ -33,6 +33,20 @@ class CampaignControllerTest extends TestCase
     }
 
     #[Test]
+    public function the_campaign_show_page_is_accessible_to_authenticated_users()
+    {
+        // given
+        $campaign = Campaign::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        // when
+        $response = $this->get(route('sendportal.campaigns.show', $campaign->id));
+
+        // then
+        $response->assertOk();
+        $response->assertSee($campaign->name);
+    }
+
+    #[Test]
     public function draft_campaigns_appear_on_the_draft_index()
     {
         $statuses = [

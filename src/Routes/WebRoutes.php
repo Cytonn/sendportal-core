@@ -116,7 +116,6 @@ class WebRoutes
 
                 // Tags.
                 $appRouter->resource('tags', 'Tags\TagsController')->except(['show']);
-                $appRouter->resource('templates', 'TemplatesController');
 
                 // Subscribers.
                 $appRouter->name('subscribers.')->prefix('subscribers')->namespace('Subscribers')->group(static function (
